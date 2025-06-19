@@ -7,3 +7,6 @@ pacman.out
 
 # VS Code settings
 .vscode/
+
+# formatter
+.clangd-format
