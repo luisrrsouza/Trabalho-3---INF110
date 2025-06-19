@@ -9,4 +9,4 @@ pacman.out
 .vscode/
 
 # formatter
-.clangd-format
+.clang-format
