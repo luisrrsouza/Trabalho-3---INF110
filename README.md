@@ -107,7 +107,7 @@ trabalho3/
     g++ -std=c++17 pacman.cpp -lsfml-graphics -lsfml-window -lsfml-system -o pacman.exe (ou .out)
     ```
 
-**Observação:** As DLLs da SFML devem estar no mesmo diretório do executável para que o jogo funcione corretamente no Windows.
+**Observação:** As DLLs da SFML devem estar no mesmo diretório do executável para que o jogo funcione corretamente.
 
 ---
 
