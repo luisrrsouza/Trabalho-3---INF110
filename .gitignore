@@ -5,5 +5,5 @@ pacman
 pacman.exe
 pacman.out
 
-# VS Code settings (optional, keep if you want to share)
+# VS Code settings
 .vscode/
