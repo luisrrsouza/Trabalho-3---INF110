@@ -104,7 +104,7 @@ trabalho3/
 - Abra o terminal (Prompt de Comando ou PowerShell) na pasta do projeto.
 - Use o comando abaixo (ajuste os caminhos conforme necessário):
     ```sh
-    g++ -std=c++17 pacman.cpp -lsfml-graphics -lsfml-window -lsfml-system -o pacman.exe
+    g++ -std=c++17 pacman.cpp -lsfml-graphics -lsfml-window -lsfml-system -o pacman.exe (ou .out)
     ```
 
 **Observação:** As DLLs da SFML devem estar no mesmo diretório do executável para que o jogo funcione corretamente no Windows.
