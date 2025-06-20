@@ -172,11 +172,38 @@ void morrer() {
 }
 
 void reinicia() {
+    // aqui reinicia se a  pessoa apertar enter ele volta para o começo do jogo
+    //  redesenhando o mapa
+    memcpy(mapa, map2, sizeof(mapa));
+    posx = COLS / 2;
+    posy = ROWS / 2;
+    pontua = 0;
+    vida = 3;
+    stop_move();
+
+    return;
 }
 
 // Checa se é possível se mover para uma posição
 // Se a posção estiver fora do mapa, inverte os indexes
 bool check_boundaries(int y, int x) {
+    if (posy + y < 0) {
+        posy = ROWS;
+        return 1;
+    }
+    if (posy + y >= ROWS) {
+        posy = -1;
+        return 1;
+    }
+    if (posx + x < 0) {
+        posx = COLS;
+        return 1;
+    }
+    if (posx + x >= COLS) {
+        posx = -1;
+        return 1;
+    }
+    return (mapa[posy + y][posx + x] != '1');
 }
 
 int main() {
