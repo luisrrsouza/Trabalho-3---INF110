@@ -172,40 +172,11 @@ void morrer() {
 }
 
 void reinicia() {
-
-    // aqui reinicia se a  pessoa apertar enter ele volta para o começo do jogo
-    //  redesenhando o mapa
-    memcpy(mapa, map2, sizeof(mapa));
-    posx = COLS / 2;
-    posy = ROWS / 2;
-    pontua = 0;
-    vida = 3;
-    stop_move();
-
-    return;
 }
 
 // Checa se é possível se mover para uma posição
 // Se a posção estiver fora do mapa, inverte os indexes
 bool check_boundaries(int y, int x) {
-
-    if (posy + y < 0) {
-        posy = ROWS;
-        return 1;
-    }
-    if (posy + y >= ROWS) {
-        posy = -1;
-        return 1;
-    }
-    if (posx + x < 0) {
-        posx = COLS;
-        return 1;
-    }
-    if (posx + x >= COLS) {
-        posx = -1;
-        return 1;
-    }
-    return (mapa[posy + y][posx + x] != '1');
 }
 
 int main() {
@@ -234,6 +205,24 @@ int main() {
         return 0;
     }
     sprite1.setTexture(texture1);
+
+    if (!texture2.loadFromFile("imagens_trab3/ghostge.png")) {
+        cout << "Erro lendo imagem imagens_trab3/ghostbd.png\n";
+        return 0;
+    }
+    sprite2.setTexture(texture2);
+
+    if (!texture3.loadFromFile("imagens_trab3/ghostrd.png")) {
+        cout << "Erro lendo imagem imagens_trab3/ghostbd.png\n";
+        return 0;
+    }
+    sprite3.setTexture(texture3);
+
+    if (!texture4.loadFromFile("imagens_trab3/ghostye.png")) {
+        cout << "Erro lendo imagem imagens_trab3/ghostbd.png\n";
+        return 0;
+    }
+    sprite4.setTexture(texture4);
 
     // setup da fonte
     if (!fonte.loadFromFile("ARCADEPI.TTF")) {
@@ -350,10 +339,15 @@ int main() {
 
         // desenha os fanstamas
         sprite1.setPosition(1 * SIZE, 1 * SIZE);
-
+        sprite2.setPosition(1 * SIZE, 23 * SIZE);
+        sprite3.setPosition(1 * SIZE, 1 * SIZE);
+        sprite4.setPosition(1 * SIZE, 1 * SIZE);
         // desenha o placar
         placar.setString("Pontos: " + to_string(pontua) + "   Vidas: " + to_string(vida));
         window.draw(sprite1);
+        window.draw(sprite2);
+        window.draw(sprite3);
+        window.draw(sprite4);
         window.draw(placar);
         window.draw(sprite);
 
