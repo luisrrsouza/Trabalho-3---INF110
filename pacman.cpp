@@ -336,7 +336,8 @@ int main() {
                 posx--;
             else if (dir && check_boundaries(0, 1))
                 posx++;
-            if (posx == ghost1x && posy == ghost1y) {
+            if ((posx == ghost1x && posy == ghost1y) || (posx == ghost2x && posy == ghost2y) ||(posx == ghost3x && posy == ghost3y) ||(posx == ghost4x && posy == ghost4y) ) {
+                //ainda falta implementar o que acontece quando o fantas e o pacman vão em direções contrárias
                 morrer();
                 if (vida == 0) {
                     window.close();
