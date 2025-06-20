@@ -280,18 +280,22 @@ int main() {
             }
 
             if (movimentoup && check_boundaries(-1, 0)) {
+                movimentoup = false;
                 cima = true;
                 baixo = esq = dir = false;
                 texture.loadFromFile("imagens_trab3/pacman-up.png");
             } else if (movimentodown && check_boundaries(1, 0)) {
+                movimentodown = false;
                 baixo = true;
                 cima = esq = dir = false;
                 texture.loadFromFile("imagens_trab3/pacman-down.png");
             } else if (movimentoleft && check_boundaries(0, -1)) {
+                movimentoleft = false;
                 esq = true;
                 cima = baixo = dir = false;
                 texture.loadFromFile("imagens_trab3/pacman-esq.png");
             } else if (movimentoright && check_boundaries(0, 1)) {
+                movimentoright = false;
                 dir = true;
                 cima = baixo = esq = false;
                 texture.loadFromFile("imagens_trab3/pacman.png");
