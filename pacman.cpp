@@ -339,9 +339,9 @@ int main() {
 
         // desenha os fanstamas
         sprite1.setPosition(1 * SIZE, 1 * SIZE);
-        sprite2.setPosition(1 * SIZE, 23 * SIZE);
-        sprite3.setPosition(1 * SIZE, 1 * SIZE);
-        sprite4.setPosition(1 * SIZE, 1 * SIZE);
+        sprite2.setPosition(23 * SIZE, 1 * SIZE);
+        sprite3.setPosition(1 * SIZE, 23 * SIZE);
+        sprite4.setPosition(23 * SIZE, 23 * SIZE);
         // desenha o placar
         placar.setString("Pontos: " + to_string(pontua) + "   Vidas: " + to_string(vida));
         window.draw(sprite1);
