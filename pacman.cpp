@@ -1,4 +1,4 @@
-// g++ pacman.cpp -lsfml-graphics -lsfml-window -lsfml-system
+// g++ pacman.cpp -lsfml-graphics -lsfml-window -lsfml-system -o pacman.out && ./pacman.out
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
