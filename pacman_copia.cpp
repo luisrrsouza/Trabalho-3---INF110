@@ -7,6 +7,7 @@
 #include <random>
 #include <ctime>
 
+
 // Código base para jogo do Pac-Man usando SFML
 // Mapa desenhado:        André Gustavo   15/06/23
 // Movimentos Pac-Man:    André Gustavo   15/06/23
@@ -142,6 +143,20 @@ Sprite sprite3;
 Texture texture4;
 Sprite sprite4;
 
+
+//Extra: frutas
+Texture fruta;
+Sprite sprite_fruta;
+int numfrutas = 5;
+
+//Extra: energético
+Texture energetico;
+Sprite sprite_energetico;
+bool temEnergetico = true;
+bool efeitoEnergetico = false;
+Clock relogioEnergetico;
+
+
 // placar
 Text placar;
 
@@ -245,10 +260,41 @@ bool check_boundaries_ghosts(int ghost_y, int ghost_x, int y, int x) {
     return true;
 }
 
+void posiciona_frutas(char mapa[ROWS][COLS+1], int numFrutas) {
+    srand(time(0));
+    int fruitsPlaced = 0;
 
+    while (fruitsPlaced < numFrutas) {
+        int row = rand() % ROWS;
+        int col = rand() % COLS;
+
+        // Verifica se a posição é válida para colocar uma fruta (caminho vazio ou com ponto)
+        if (mapa[row][col] == '0' || mapa[row][col] == '*') {
+            mapa[row][col] = 'f';  // 'f' representa uma fruta
+            fruitsPlaced++;
+        }
+    }
+}
+
+void posiciona_energetico(char mapa[ROWS][COLS + 1]) {
+    srand(time(0));  // Apenas uma vez no início do programa idealmente
+
+    while (true) {
+        int row = rand() % ROWS;
+        int col = rand() % COLS;
+
+        if (mapa[row][col] == '0') {
+            mapa[row][col] = 'e';  // energético
+            break;
+        }
+    }
+}
 
 
 int main() {
+    posiciona_frutas(mapa, numfrutas);
+    posiciona_energetico(mapa);
+
     // cria um relogio para medir o tempo do PacMan
     Clock clock;
 
@@ -294,7 +340,22 @@ int main() {
         return 0;
     }
     sprite4.setTexture(texture4);
+    
+    
+    //Sprite do energético
+    if (!energetico.loadFromFile("imagens_trab3/energy-drink.png")) {
+        cout << "Erro lendo imagem imagens_trab3/energetico.png\n";
+        return 0;
+    }
+    sprite_energetico.setTexture(energetico);
 
+
+    //Sprite das frutas
+    if (!fruta.loadFromFile("imagens_trab3/pizza.png")) {
+        cout << "Erro lendo imagem imagens_trab3/pizza.png\n";
+        return 0;
+    }
+    sprite_fruta.setTexture(fruta); // Agora sim, depois de carregar corretamente
     // setup da fonte
     if (!fonte.loadFromFile("ARCADEPI.TTF")) {
         cout << "Erro carregando fonte\n";
@@ -343,11 +404,29 @@ int main() {
         }
 
         // Muda a posição do PacMan a cada 0.2 segundos
-        if (clock.getElapsedTime() > seconds(0.2)) { // tempo desde último restart > 0.2s?
+        float intervalo = efeitoEnergetico ? 0.1f : 0.2f;
+        if (clock.getElapsedTime() > seconds(intervalo)) {
+            if (efeitoEnergetico && relogioEnergetico.getElapsedTime() > seconds(5)) {
+                efeitoEnergetico = false;
+            }
+
+
             clock.restart();                         // recomeça contagem do tempo
             if (mapa[posy][posx] == '0') {
                 pontua += 10;           // soma 10 pontos
                 mapa[posy][posx] = '*'; // marca como comido
+            }
+            //Se o pacman comer uma fruta
+            else if (mapa[posy][posx] == 'f') {
+                pontua += 50;
+                mapa[posy][posx] = '*';
+                numfrutas--;
+            }
+            //Se o pacman comer o energe´tico
+            else if (mapa[posy][posx] == 'e') {
+                efeitoEnergetico = true;
+                relogioEnergetico.restart();
+                mapa[posy][posx] = '*';
             }
 
             if (movimentoup && check_boundaries(-1, 0)) {
@@ -388,6 +467,7 @@ int main() {
                     return 0;
                 }
             }
+            
         }
         if (clock_ghosts.getElapsedTime() > seconds(0.3)) { 
             clock_ghosts.restart();
@@ -420,6 +500,15 @@ int main() {
                     ponto.setPosition(j * SIZE + SIZE / 2.5f, i * SIZE + SIZE / 2.5f);
                     window.draw(ponto);
                 }
+                else if (mapa[i][j] == 'f') {
+                    sprite_fruta.setPosition(j * SIZE, i * SIZE);
+                    window.draw(sprite_fruta);
+                }
+                else if (mapa[i][j] == 'e') {
+                    sprite_energetico.setPosition(j * SIZE, i * SIZE);
+                    window.draw(sprite_energetico);
+                }
+
         // desenha PacMan
         sprite.setPosition(posx * SIZE, posy * SIZE);
         window.draw(sprite);
@@ -437,7 +526,8 @@ int main() {
         window.draw(sprite4);
         window.draw(placar);
         window.draw(sprite);
-
+        //desenha as frutas
+        
         // termina e desenha o frame corrente
         window.display();
     }
