@@ -150,10 +150,8 @@ trabalho3/
 
 ### Personagens
 - **Pac-Man**: Controlado pelo jogador
-- **Fantasma Azul (Ghost1)**: Movimento aleatório inteligente - posição inicial (1,1)
-- **Fantasma Verde (Ghost2)**: **IA PERSEGUIDORA** que usa algoritmo de pathfinding para perseguir o Pac-Man - posição inicial (23,1)
-- **Fantasma Vermelho (Ghost3)**: Movimento aleatório inteligente - posição inicial (1,23)
-- **Fantasma Amarelo (Ghost4)**: Movimento aleatório inteligente - posição inicial (23,23)
+- **Fantasma Azul (Ghost1) e Verde (Ghost2)**: Movimento aleatório inteligente
+- **Fantasma Vermelho (Ghost2) e Amarelo (Ghost4)**: **IA PERSEGUIDORA** que usa algoritmo de pathfinding para perseguir o Pac-Man
 
 ## Tecnologias Utilizadas
 
