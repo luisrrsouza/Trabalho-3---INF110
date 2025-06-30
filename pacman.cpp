@@ -279,7 +279,7 @@ bool check_boundaries(int y, int x) {
 
 
 
-int calculata_distancia(int x1, int y1, int x2, int y2) {
+int calcula_distancia(int x1, int y1, int x2, int y2) {
     return abs(x1 - x2) + abs(y1 - y2);
 }
 
@@ -307,7 +307,7 @@ void move_ghost_persegue(int& x, int& y, int who, int targetX, int targetY) {
         if (newY >= ROWS) newY = 0;
         
         if (mapa[newY][newX] != '1') {
-            int distance = calculata_distancia(newX, newY, targetX, targetY);
+            int distance = calcula_distancia(newX, newY, targetX, targetY);
             if (distance < minDistance) {
                 minDistance = distance;
                 bestDirection = dir;
@@ -320,7 +320,6 @@ void move_ghost_persegue(int& x, int& y, int who, int targetX, int targetY) {
         x += dx[bestDirection];
         y += dy[bestDirection];
         
-        // Trata túneis
         if (x < 0) x = COLS - 1;
         if (x >= COLS) x = 0;
         if (y < 0) y = ROWS - 1;
