@@ -40,13 +40,17 @@ Este é um projeto de implementação do clássico jogo Pac-Man utilizando C++ e
 
 #### Sistema de Fantasmas Avançado
 - **4 fantasmas ativos**: Todos os quatro fantasmas implementados e funcionais
-- **IA Inteligente**: Ghost2 implementa algoritmo de perseguição ao Pac-Man
-- **IA Normal**: Ghost1, Ghost3 e Ghost4 com movimento aleatório inteligente
+- **IA Inteligente com A* Pathfinding**: Ghost[2] implementa algoritmo A* para perseguição inteligente ao Pac-Man
+- **IA Normal**: Ghost[0], Ghost[1] e Ghost[3] com movimento aleatório inteligente
 - **Prevenção de reversão**: Todos os fantasmas evitam voltar na direção anterior
+- **Algoritmo A* Otimizado**: Sistema de pathfinding que encontra o caminho mais curto até o Pac-Man
+- **Cache de caminho**: Recalcula rota apenas quando o Pac-Man muda de posição ou caminho termina
+- **Fallback inteligente**: Se A* falhar, usa movimento aleatório como backup
 - **Suporte a túneis**: Fantasmas podem usar túneis horizontais e verticais
-- **Colisão**: Detecção de colisão com Pac-Man causa morte
+- **Colisão**: Detecção de colisão com Pac-Man causa morte via função `verifica_morte()`
 - **Sprites diferenciados**: Cada fantasma tem cor e sprite únicos
-- **Posicionamento inicial**: Ghost1(1,1), Ghost2(23,1), Ghost3(1,23), Ghost4(23,23)
+- **Posicionamento inicial**: Ghost[0](1,1), Ghost[1](1,23), Ghost[2](23,1), Ghost[3](23,23)
+- **Verificação otimizada**: Sistema de colisão executado a cada frame
 
 #### Sistema de Power Pellets
 - **Energético**: Item especial que acelera o Pac-Man
@@ -75,16 +79,27 @@ Este é um projeto de implementação do clássico jogo Pac-Man utilizando C++ e
 
 ### Funcionalidades Técnicas Avançadas
 
+#### Sistema de A* Pathfinding
+- **Algoritmo A* Completo**: Implementação do algoritmo de busca heurística para encontrar o caminho mais curto
+- **Estruturas Especializadas**: `Node` para representar células com custos f, g, h e `Compare` para priority queue
+- **Heurística Euclidiana**: Usa distância euclidiana como função heurística para estimar custos
+- **Priority Queue Otimizada**: Min-heap baseado no custo f para processamento eficiente
+- **Prevenção de Movimento Reverso**: Evita que fantasmas voltem na direção anterior durante o pathfinding
+- **Cache Inteligente**: Recalcula caminho apenas quando necessário (alvo mudou ou caminho terminou)
+- **Validação de Células**: Verifica limites do mapa e colisões com paredes usando `is_valid_cell()`
+- **Fallback Robusto**: Sistema de backup com movimento aleatório se A* falhar
+
 #### Sistema de Túneis
 - **Túneis horizontais**: Nas linhas 11 e 13 do mapa
 - **Túnel vertical**: Na coluna central (coluna 12)
 - **Teleportação**: Pac-Man e fantasmas podem atravessar as bordas da tela
 
 #### IA dos Fantasmas
-- **Fantasma Perseguidor (Ghost2)**: Usa algoritmo de distância Manhattan para perseguir o Pac-Man
+- **Fantasma Perseguidor Inteligente (Ghost[2])**: Usa algoritmo A* para perseguição otimizada do Pac-Man
 - **Fantasmas Aleatórios**: Movimento aleatório inteligente com prevenção de reversão
 - **Detecção de colisão**: Sistema robusto de detecção de paredes
 - **Movimento sincronizado**: Todos os fantasmas se movem independentemente
+- **Rastreamento de direção**: Cada fantasma mantém histórico de `last_direction` e `opposite_direction`
 
 #### Sistema de Estados
 - **Estado inicial**: Tela de menu
@@ -92,6 +107,18 @@ Este é um projeto de implementação do clássico jogo Pac-Man utilizando C++ e
 - **Estado de morte**: Tela de game over
 - **Estado de vitória**: Tela de vitória
 - **Transições**: Navegação fluida entre estados
+
+### Sistema de Reinicialização Inteligente
+- **Função `reinicia()`**: Sistema completo de reset do jogo
+- **Ordem correta**: Copia mapa original ANTES de posicionar itens
+- **Reset completo**: Vida, pontuação, estados de tela e posições
+- **Gerenciamento de memória**: Uso correto de `memcpy()` para restaurar mapa
+- **Reposicionamento**: Pac-Man e fantasmas retornam às posições iniciais
+
+### Sistema de Escala Responsiva
+- **Adaptação automática**: Sprites se adaptam ao tamanho das células do mapa
+- **Escalamento proporcional**: Todos os elementos visuais mantêm proporção
+- **Fórmula de escala**: `SIZE/25.0` para compatibilidade com diferentes resoluções
 
 #### Sistema de Vitória Completo
 - **Contador de pontos**: Sistema que verifica pontuação total (3340 pontos)
@@ -150,8 +177,10 @@ trabalho3/
 
 ### Personagens
 - **Pac-Man**: Controlado pelo jogador
-- **Fantasma Azul (Ghost1) e Verde (Ghost2)**: Movimento aleatório inteligente
-- **Fantasma Vermelho (Ghost3) e Amarelo (Ghost4)**: **IA PERSEGUIDORA** que usa algoritmo de pathfinding para perseguir o Pac-Man
+- **Fantasma Azul (Ghost[0])**: Movimento aleatório inteligente - posição inicial (1,1)
+- **Fantasma Verde (Ghost[1])**: Movimento aleatório inteligente - posição inicial (1,23)
+- **Fantasma Vermelho (Ghost[2])**: **IA PERSEGUIDORA A*** que usa algoritmo A* pathfinding para perseguir o Pac-Man inteligentemente - posição inicial (23,1)
+- **Fantasma Amarelo (Ghost[3])**: Movimento aleatório inteligente - posição inicial (23,23)
 
 ## Tecnologias Utilizadas
 
@@ -169,7 +198,75 @@ trabalho3/
     g++ -std=c++17 pacman.cpp -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -o pacman.out
     ```
 
+## Funcionalidades Avançadas Implementadas
+
+### Sistema A* Pathfinding
+- **Algoritmo A* Completo**: Ghost[2] implementa algoritmo A* para perseguição inteligente
+- **Estruturas Especializadas**: 
+  - `Node`: Representa células com custos f, g, h e coordenadas dos pais
+  - `Compare`: Operador de comparação para priority queue min-heap
+- **Heurística Euclidiana**: Usa função `calculate_distance()` para estimativa de custo
+- **Prevenção de Reversão**: Evita que fantasmas voltem na direção anterior
+- **Cache de Caminho**: Recalcula apenas quando Pac-Man muda de posição ou caminho termina
+- **Fallback Inteligente**: Sistema de backup com movimento aleatório se A* falhar
+
+### Código Snake_Case
+- **Padronização**: Todas as variáveis e funções seguem padrão `snake_case`
+- **Structs Atualizadas**: 
+  - `Pacman`: `current_up`, `intention_left`, etc.
+  - `Ghost`: `last_direction`, `opposite_direction`
+  - `Game_State`: `life`, `points`, etc.
+- **Funções Utilitárias**: `is_valid_cell()`, `calculate_distance()`, `move_ghost_astar()`
+
+### Algoritmo A* - Funções Principais
+```cpp
+// Validação de células (limites do mapa e paredes)
+bool is_valid_cell(int x, int y);
+
+// Cálculo de distância euclidiana (heurística)
+double calculate_distance(int x1, int y1, int x2, int y2);
+
+// Implementação completa do algoritmo A*
+vector<pair<int, int>> findPath(int start_x, int start_y, int target_x, int target_y, Ghost ghost_ref);
+
+// Movimento inteligente com cache de caminho
+void move_ghost_astar(Ghost& ghost_ref, int target_x, int target_y);
+```
+
+### Performance e Otimizações
+- **Priority Queue**: Min-heap baseado no custo f para processamento eficiente
+- **Cache Inteligente**: Evita recálculos desnecessários do caminho A*
+- **Validação Otimizada**: Verificação rápida de células válidas
+- **Fallback Robusto**: Movimento aleatório como backup se pathfinding falhar
+
 **Observação:** As bibliotecas da SFML devem estar instaladas no sistema para que o jogo funcione corretamente.
+
+### Solucionando Problemas de Compilação
+
+Se você receber erros de "undefined reference" relacionados ao áudio:
+
+1. **Certifique-se de incluir todas as bibliotecas necessárias:**
+   ```sh
+   g++ -std=c++17 pacman.cpp -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -o pacman.out
+   ```
+
+2. **Instale as bibliotecas de desenvolvimento SFML:**
+   ```sh
+   # Ubuntu/Debian
+   sudo apt-get install libsfml-dev
+   
+   # Arch Linux
+   sudo pacman -S sfml
+   
+   # Fedora/CentOS
+   sudo dnf install SFML-devel
+   ```
+
+3. **Compilação sem áudio (se necessário):**
+   Se você não conseguir instalar as bibliotecas de áudio, pode comentar as linhas relacionadas ao som no código e compilar apenas com:
+   ```sh
+   g++ -std=c++17 pacman.cpp -lsfml-graphics -lsfml-window -lsfml-system -o pacman.out
+   ```
 
 ## Como jogar
 
@@ -183,19 +280,39 @@ trabalho3/
 5. Evite os fantasmas (especialmente o verde que persegue!)
 6. Colete 3340 pontos para completar o jogo
 
-## Algoritmos Implementados
+## Funcionalidades Técnicas Detalhadas
 
-### IA do Fantasma Perseguidor
+### Sistema de Colisão Avançado
+- **Detecção precisa**: Verifica colisões entre Pac-Man e fantasmas a cada frame
+- **Função `verifica_morte()`**: Sistema otimizado de verificação de colisão
+- **Verificação por coordenadas**: Compara posições exatas `(posx, posy)` com todos os fantasmas
+- **Túneis seguros**: Colisões funcionam corretamente mesmo nos túneis
+- **Performance otimizada**: Uma única função verifica todos os 4 fantasmas
+
+### Sistema de Escala Responsiva
+- **Adaptação automática**: Todos os sprites se ajustam dinamicamente
+- **Escalamento consistente**: Usa `SIZE/25.0` para manter proporções
+- **Interface adaptável**: Textos, overlay e elementos UI também escalam
+
+### Algoritmos Implementados
+
+#### IA do Fantasma Perseguidor
 O Ghost2 (fantasma verde) implementa um algoritmo de perseguição baseado em:
 - **Distância Manhattan**: Calcula a distância `|x1-x2| + |y1-y2|` até o Pac-Man
 - **Pathfinding simples**: Escolhe sempre a direção que diminui a distância
 - **Prevenção de loops**: Evita voltar na direção anterior
 - **Tratamento de túneis**: Considera teleportação nas bordas do mapa
 
-### Sistema de Vitória Inteligente
+#### Sistema de Vitória Inteligente
 - **Contador automático**: Sistema conta automaticamente pontos coletados
 - **Verificação em tempo real**: Checa vitória após cada collectible
 - **Pontuação fixa**: 3340 pontos totais calculados do mapa
+
+#### Sistema de Escalamento Visual
+- **Escala dinâmica**: Fórmula `SIZE/25.0` para todos os sprites
+- **Consistência visual**: Mantém proporções independente do tamanho da célula
+- **Adaptabilidade**: Permite fácil modificação do tamanho do jogo
+- **Elementos escaláveis**: Sprites, textos, overlay e elementos UI se ajustam automaticamente
 
 ## Status de Desenvolvimento
 
@@ -215,12 +332,43 @@ O Ghost2 (fantasma verde) implementa um algoritmo de perseguição baseado em:
 ### Recursos Técnicos Avançados
 - **Algoritmo de Perseguição**: Distância Manhattan + prevenção de loops
 - **Sistema de Estados**: Máquina de estados bem definida  
-- **Detecção de Colisão**: Robusta para paredes, túneis e fantasmas
+- **Detecção de Colisão**: Robusta para paredes, túneis e fantasmas via `verifica_morte()`
 - **Gerenciamento de Recursos**: Texturas, sons e fontes organizados
 - **Pontuação Dinâmica**: Sistema de contagem automática e precisa
+- **Escalamento Visual**: Sistema responsivo que adapta todos os elementos visuais
+- **Otimização de Performance**: Verificações de colisão otimizadas por frame
+- **Reinicialização Inteligente**: Sistema robusto de reset com ordem correta de operações
+- **Gerenciamento de Memória**: Uso eficiente de `memcpy()` e arrays estáticos
 
 **🎮 O jogo está pronto para ser jogado e avaliado!**
 
 ---
 
 *Projeto desenvolvido para a disciplina INF110 - Programação 1*
+
+## Melhorias Técnicas Implementadas
+
+### 1. Algoritmo A* Pathfinding
+- **Implementação Completa**: Sistema de busca heurística para encontrar caminho ótimo
+- **Estruturas de Dados Otimizadas**: Priority queue com min-heap para eficiência
+- **Heurística Inteligente**: Distância euclidiana para estimativa de custo
+- **Prevenção de Loops**: Evita movimento reverso durante pathfinding
+
+### 2. Refatoração para Snake_Case
+- **Padronização**: Todas as variáveis seguem convenção `snake_case`
+- **Melhor Legibilidade**: Código mais profissional e consistente
+- **Manutenibilidade**: Facilita futuras modificações e debugging
+
+### 3. Otimizações de Performance
+- **Cache de Caminho**: Recalcula A* apenas quando necessário
+- **Validação Eficiente**: Função `is_valid_cell()` otimizada
+- **Fallback Inteligente**: Sistema robusto de backup para movimento
+
+### 4. Arquitetura Modular
+- **Separação de Responsabilidades**: Cada função tem propósito específico
+- **Reutilização de Código**: Funções utilitárias compartilhadas
+- **Escalabilidade**: Fácil adição de novos tipos de IA
+
+---
+
+**Nota**: Este projeto demonstra implementação avançada de algoritmos de IA em jogos, com foco em pathfinding inteligente e código limpo seguindo boas práticas de programação.
