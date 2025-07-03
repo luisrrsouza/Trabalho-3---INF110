@@ -203,19 +203,6 @@ void posiciona_boost(char mapa[ROWS][COLS + 1]) {
     }
 }
 
-void reinicia() {
-    music.play();
-    game_state.life = 3;
-    game_state.points = 0;
-    game_state.lose = false;
-    game_state.win = false;
-    memcpy(mapa, mapa_original, sizeof(mapa));
-    posiciona_frutas(mapa);
-    posiciona_boost(mapa);
-    stop_move();
-    reposiciona();
-}
-
 bool check_boundaries(int y, int x) {
     if (pacman.y + y < 0) {
         pacman.y = ROWS;
@@ -407,14 +394,14 @@ vector<pair<int, int>> findPath(int start_x, int start_y, int target_x, int targ
     return path;
 }
 
-void move_ghost_astar(Ghost &ghost_ref, int target_x, int target_y) {
+void move_ghost_astar(Ghost &ghost_ref, int target_x, int target_y, bool force_recalc = false) {
     static vector<pair<int, int>> current_path;
     static int path_index = 0;
     static int last_target_x = -1, last_target_y = -1;
 
     int last_direction = ghost_ref.last_direction;
 
-    if (target_x != last_target_x || target_y != last_target_y || path_index >= current_path.size()) {
+    if (force_recalc || target_x != last_target_x || target_y != last_target_y || path_index >= current_path.size()) {
         current_path = findPath(ghost_ref.x, ghost_ref.y, target_x, target_y, ghost_ref);
         path_index = 0;
         last_target_x = target_x;
@@ -447,6 +434,20 @@ void move_ghost_astar(Ghost &ghost_ref, int target_x, int target_y) {
     } else {
         move_ghost(ghost_ref);
     }
+}
+
+void reinicia() {
+    music.play();
+    game_state.life = 3;
+    game_state.points = 0;
+    game_state.lose = false;
+    game_state.win = false;
+    memcpy(mapa, mapa_original, sizeof(mapa));
+    posiciona_frutas(mapa);
+    posiciona_boost(mapa);
+    stop_move();
+    reposiciona();
+    move_ghost_astar(ghost[2], pacman.x, pacman.y, true);
 }
 
 int main() {
