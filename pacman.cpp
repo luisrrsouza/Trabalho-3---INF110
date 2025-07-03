@@ -1,15 +1,15 @@
 // g++ pacman_copia.cpp -lsfml-graphics -lsfml-window -lsfml-system -o pacman.out && ./pacman.out
-#include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
 #include <cfloat>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <cmath>
-#include <vector>
 #include <queue>
+#include <vector>
 
 // Código base para jogo do Pac-Man usando SFML
 // Mapa desenhado:        André Gustavo   15/06/23
@@ -18,8 +18,8 @@
 // Colisão com paredes:   implementado
 // Intenção de movimento: implementado
 
-#define Pair pair<int,int>
-#define pPair pair<double,pair<int,int>> 
+#define Pair pair<int, int>
+#define pPair pair<double, pair<int, int>>
 
 using namespace sf;
 using namespace std;
@@ -127,9 +127,7 @@ Clock clock_boost;
 Clock relo;
 Clock clock_ghosts;
 
-bool is_valid_cell(int x, int y) {
-    return (x >= 0 && x < COLS && y >= 0 && y < ROWS && mapa[y][x] != '1');
-}
+bool is_valid_cell(int x, int y) { return (x >= 0 && x < COLS && y >= 0 && y < ROWS && mapa[y][x] != '1'); }
 
 double calculate_distance(int x1, int y1, int x2, int y2) {
     return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
@@ -146,10 +144,14 @@ void stop_move() {
 void reposiciona() {
     pacman.x = ROWS / 2;
     pacman.y = COLS / 2;
-    ghost[0].x = 1; ghost[0].y = 1;
-    ghost[1].x = 1; ghost[1].y = 23;
-    ghost[2].x = 23; ghost[2].y = 1;
-    ghost[3].x = 23; ghost[3].y = 23;
+    ghost[0].x = 1;
+    ghost[0].y = 1;
+    ghost[1].x = 1;
+    ghost[1].y = 23;
+    ghost[2].x = 23;
+    ghost[2].y = 1;
+    ghost[3].x = 23;
+    ghost[3].y = 23;
 
     for (int i = 0; i < 4; i++) {
         ghost[i].opposite_direction = -1;
@@ -210,8 +212,6 @@ void reinicia() {
     memcpy(mapa, mapa_original, sizeof(mapa));
     posiciona_frutas(mapa);
     posiciona_boost(mapa);
-
-    
     stop_move();
     reposiciona();
 }
@@ -253,24 +253,22 @@ bool verifica_morte() {
     return 0;
 }
 
-
 struct Node {
     int x, y;
     double f, g, h;
     int parent_x, parent_y;
-    
+
     Node() : x(0), y(0), f(0), g(0), h(0), parent_x(-1), parent_y(-1) {}
     Node(int _x, int _y) : x(_x), y(_y), f(0), g(0), h(0), parent_x(-1), parent_y(-1) {}
 };
 
 struct Compare {
-    bool operator()(const Node& a, const Node& b) {
+    bool operator()(const Node &a, const Node &b) {
         return a.f > b.f; // Min heap based on f value
     }
 };
 
-
-void move_ghost(Ghost& ghost_ref) {
+void move_ghost(Ghost &ghost_ref) {
     int valid_directions[4];
     int valid_count = 0;
 
@@ -315,19 +313,18 @@ void move_ghost(Ghost& ghost_ref) {
         ghost_ref.y = 0;
 }
 
-
 vector<pair<int, int>> findPath(int start_x, int start_y, int target_x, int target_y, Ghost ghost_ref) {
     vector<pair<int, int>> path;
-    
+
     if (!is_valid_cell(target_x, target_y) || (start_x == target_x && start_y == target_y)) {
         return path;
     }
-    
+
     bool closed_list[ROWS][COLS];
     memset(closed_list, 0, sizeof(closed_list));
-    
+
     Node cell_details[ROWS][COLS];
-    
+
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
             cell_details[i][j] = Node(j, i);
@@ -336,47 +333,47 @@ vector<pair<int, int>> findPath(int start_x, int start_y, int target_x, int targ
             cell_details[i][j].h = FLT_MAX;
         }
     }
-    
+
     cell_details[start_y][start_x].f = 0.0;
     cell_details[start_y][start_x].g = 0.0;
     cell_details[start_y][start_x].h = 0.0;
     cell_details[start_y][start_x].parent_x = start_x;
     cell_details[start_y][start_x].parent_y = start_y;
-    
+
     priority_queue<Node, vector<Node>, Compare> open_list;
     open_list.push(cell_details[start_y][start_x]);
-    
+
     bool found_dest = false;
-    
+
     int dx[] = {1, 0, -1, 0};
     int dy[] = {0, 1, 0, -1};
-    
+
     while (!open_list.empty() && !found_dest) {
         Node current = open_list.top();
         open_list.pop();
-        
+
         int x = current.x;
         int y = current.y;
         closed_list[y][x] = true;
 
         int opposite_direciton = ghost_ref.opposite_direction;
-        
+
         for (int dir = 0; dir < 4; dir++) {
             if (x == start_x && y == start_y && dir == opposite_direciton) {
                 continue;
             }
-            
+
             int new_x = x + dx[dir];
             int new_y = y + dy[dir];
-            
+
             if (is_valid_cell(new_x, new_y)) {
                 if (new_x == target_x && new_y == target_y) {
                     cell_details[new_y][new_x].parent_x = x;
                     cell_details[new_y][new_x].parent_y = y;
                     found_dest = true;
-                    
+
                     int path_x = target_x, path_y = target_y;
-                    while (!(cell_details[path_y][path_x].parent_x == path_x && 
+                    while (!(cell_details[path_y][path_x].parent_x == path_x &&
                              cell_details[path_y][path_x].parent_y == path_y)) {
                         path.push_back({path_x, path_y});
                         int temp_x = cell_details[path_y][path_x].parent_x;
@@ -387,63 +384,63 @@ vector<pair<int, int>> findPath(int start_x, int start_y, int target_x, int targ
                     path.push_back({path_x, path_y});
                     reverse(path.begin(), path.end());
                     break;
-                }
-                else if (!closed_list[new_y][new_x]) {
+                } else if (!closed_list[new_y][new_x]) {
                     double g_new = cell_details[y][x].g + 1.0;
                     double h_new = calculate_distance(new_x, new_y, target_x, target_y);
                     double f_new = g_new + h_new;
-                    
-                    if (cell_details[new_y][new_x].f == FLT_MAX || 
-                        cell_details[new_y][new_x].f > f_new) {
-                        
+
+                    if (cell_details[new_y][new_x].f == FLT_MAX || cell_details[new_y][new_x].f > f_new) {
+
                         cell_details[new_y][new_x].f = f_new;
                         cell_details[new_y][new_x].g = g_new;
                         cell_details[new_y][new_x].h = h_new;
                         cell_details[new_y][new_x].parent_x = x;
                         cell_details[new_y][new_x].parent_y = y;
-                        
+
                         open_list.push(cell_details[new_y][new_x]);
                     }
                 }
             }
         }
     }
-    
+
     return path;
 }
 
-
-
-void move_ghost_astar(Ghost& ghost_ref, int target_x, int target_y) {
+void move_ghost_astar(Ghost &ghost_ref, int target_x, int target_y) {
     static vector<pair<int, int>> current_path;
     static int path_index = 0;
     static int last_target_x = -1, last_target_y = -1;
-    
+
     int last_direction = ghost_ref.last_direction;
-    
+
     if (target_x != last_target_x || target_y != last_target_y || path_index >= current_path.size()) {
         current_path = findPath(ghost_ref.x, ghost_ref.y, target_x, target_y, ghost_ref);
         path_index = 0;
         last_target_x = target_x;
         last_target_y = target_y;
     }
-    
+
     if (!current_path.empty() && path_index < current_path.size()) {
         if (path_index == 0 && current_path[0].first == ghost_ref.x && current_path[0].second == ghost_ref.y) {
             path_index++;
         }
-        
+
         if (path_index < current_path.size()) {
             int delta_x = current_path[path_index].first - ghost_ref.x;
             int delta_y = current_path[path_index].second - ghost_ref.y;
-            
+
             ghost_ref.x = current_path[path_index].first;
             ghost_ref.y = current_path[path_index].second;
-            
-            if (delta_x == 1 && delta_y == 0) ghost_ref.last_direction = 0; 
-            else if (delta_x == 0 && delta_y == 1) ghost_ref.last_direction = 1; 
-            else if (delta_x == -1 && delta_y == 0) ghost_ref.last_direction = 2; 
-            else if (delta_x == 0 && delta_y == -1) ghost_ref.last_direction = 3; 
+
+            if (delta_x == 1 && delta_y == 0)
+                ghost_ref.last_direction = 0;
+            else if (delta_x == 0 && delta_y == 1)
+                ghost_ref.last_direction = 1;
+            else if (delta_x == -1 && delta_y == 0)
+                ghost_ref.last_direction = 2;
+            else if (delta_x == 0 && delta_y == -1)
+                ghost_ref.last_direction = 3;
             ghost_ref.opposite_direction = ((ghost_ref.last_direction + 2) % 4);
             path_index++;
         }
@@ -451,7 +448,6 @@ void move_ghost_astar(Ghost& ghost_ref, int target_x, int target_y) {
         move_ghost(ghost_ref);
     }
 }
-
 
 int main() {
     reposiciona();
@@ -548,11 +544,11 @@ int main() {
     text_exit.setPosition(120, 450);
     int aux = 1;
     while (window.isOpen()) {
-        
+
         Event event;
 
         if (game_state.start) {
-            
+
             while (window.pollEvent(event)) {
                 if (event.type == Event::KeyPressed) {
                     if (event.key.code == Keyboard::Up || event.key.code == Keyboard::W) {
@@ -680,7 +676,7 @@ int main() {
                     move_ghost(ghost[1]);
                     move_ghost_astar(ghost[2], pacman.x, pacman.y);
                     move_ghost(ghost[3]);
-                   
+
                     clock_ghosts.restart();
                     if (verifica_morte()) {
                         morrer();
