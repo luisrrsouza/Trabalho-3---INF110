@@ -88,6 +88,8 @@ char mapa_original[ROWS][COLS+1] = {
   "1111111111110111111111111"
 };
 
+char mapa[ROWS][COLS+1];
+
 int aux = 1;
 int vida = 3;
 int pontua = 0;
@@ -400,6 +402,7 @@ bool verifica_morte(){
 }
 
 int main() {
+    memcpy(mapa, mapa_original, sizeof(mapa_original));
     music.openFromFile("sons/music.mp3");
     death_sound.openFromFile("sons/death.mp3");
     game_over.openFromFile("sons/game_over.mp3");
