@@ -207,10 +207,11 @@ void reinicia() {
     game_state.points = 0;
     game_state.lose = false;
     game_state.win = false;
+    memcpy(mapa, mapa_original, sizeof(mapa));
     posiciona_frutas(mapa);
     posiciona_boost(mapa);
 
-    memcpy(mapa, mapa_original, sizeof(mapa));
+    
     stop_move();
     reposiciona();
 }
