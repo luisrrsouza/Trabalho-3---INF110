@@ -1,4 +1,5 @@
 // g++ pacman_copia.cpp -lsfml-graphics -lsfml-window -lsfml-system -o pacman.out && ./pacman.out
+// https://docs.google.com/presentation/d/1cCzdtlDNhkRqIwMMGLtdGYEfC60Vs4DZoHIObHdFGsk/edit?usp=sharing
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
