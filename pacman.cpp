@@ -172,7 +172,7 @@ void morrer() {
     death_sound.play();
     vida--;
     morto = 0;
-    
+    efeitoEnergetico = false;
     if (vida <= 0) {
         tela_morte = true;
         music.stop();
