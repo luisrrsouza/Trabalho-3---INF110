@@ -641,6 +641,7 @@ int main() {
 
         // Desenha o jogo
         if (tela_start) {
+            sprite_tela_start.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
             window.draw(sprite_tela_start);
         } else {
 
@@ -648,23 +649,28 @@ int main() {
                 for (int j = 0; j < COLS; j++) {
                     if (mapa[i][j] == '1') {
                         rectangle.setPosition(j * SIZE, i * SIZE);
+                        rectangle.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
                         window.draw(rectangle);
                     } else if (mapa[i][j] == '0' || mapa[i][j] == '*') {
                         CircleShape ponto(SIZE / 8.0f);
                         ponto.setFillColor(mapa[i][j] == '0' ? Color::White : Color(128, 128, 128));
                         ponto.setPosition(j * SIZE + SIZE / 2.5f, i * SIZE + SIZE / 2.5f);
+                        ponto.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
                         window.draw(ponto);
                     } else if (mapa[i][j] == 'f') {
                         sprite_fruta.setPosition(j * SIZE, i * SIZE);
+                        sprite_fruta.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
                         window.draw(sprite_fruta);
                     } else if (mapa[i][j] == 'e') {
                         sprite_energetico.setPosition(j * SIZE, i * SIZE);
+                        sprite_energetico.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
                         window.draw(sprite_energetico);
                     }
                 }
             }
 
             sprite.setPosition(posx * SIZE, posy * SIZE);
+            sprite.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
             window.draw(sprite);
 
             sprite1.setPosition(ghost1x * SIZE, ghost1y * SIZE);
@@ -672,12 +678,18 @@ int main() {
             sprite3.setPosition(ghost3x * SIZE, ghost3y * SIZE);
             sprite4.setPosition(ghost4x * SIZE, ghost4y * SIZE);
 
+            sprite1.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
+            sprite2.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
+            sprite3.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
+            sprite4.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
+
             window.draw(sprite1);
             window.draw(sprite2);
             window.draw(sprite3);
             window.draw(sprite4);
 
             placar.setString("Pontos: " + to_string(pontua) + "   Vidas: " + to_string(vida));
+            placar.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
             window.draw(placar);
 
             if (tela_morte || tela_vitoria) {
@@ -685,6 +697,7 @@ int main() {
                 // Fundo escuro semi-transparente
                 RectangleShape overlay(Vector2f(COLS * SIZE, (ROWS + 2) * SIZE));
                 overlay.setFillColor(Color(0, 0, 0, 180));
+                overlay.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
                 window.draw(overlay);
 
                 if (tela_morte) {
@@ -692,19 +705,23 @@ int main() {
                     sprite_tela_morte.setPosition(140, 100);
 
                     text_restart.setString("Continuar? (Aperte R)");
+                    sprite_tela_morte.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
 
                     window.draw(sprite_tela_morte);
 
                 } else {
 
                     text_restart.setString("Reiniciar? (Aperte R)");
-
+                    sprite_tela_vitoria.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
                     window.draw(sprite_tela_vitoria);
                 }
 
                 text_exit.setString("Sair? (Aperte ESC)");
 
                 // Tela de morte
+                text_restart.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
+                text_exit.setScale(double(SIZE/ 25.0), double(SIZE/ 25.0));
+
                 window.draw(text_restart);
                 window.draw(text_exit);
             }
