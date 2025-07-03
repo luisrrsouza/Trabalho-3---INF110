@@ -3,10 +3,13 @@
 #include <SFML/Audio.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
+#include <cfloat>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-
+#include <cmath>
+#include <vector>
+#include <queue>
 
 // Código base para jogo do Pac-Man usando SFML
 // Mapa desenhado:        André Gustavo   15/06/23
@@ -66,15 +69,15 @@ char mapa[ROWS][COLS + 1];
 struct Pacman {
     int x = ROWS / 2;
     int y = COLS / 2;
-    bool currentUp = false;
-    bool currentDown = false;
-    bool currentLeft = false;
-    bool currentRight = false;
+    bool current_up = false;
+    bool current_down = false;
+    bool current_left = false;
+    bool current_right = false;
 
-    bool intentionUp = false;
-    bool intentionDown = false;
-    bool intentionLeft = false;
-    bool intentionRight = false;
+    bool intention_up = false;
+    bool intention_down = false;
+    bool intention_left = false;
+    bool intention_right = false;
 
     Texture texture;
     Sprite sprite;
@@ -85,6 +88,7 @@ struct Ghost {
     Sprite sprite;
     int x, y;
     int opposite_direction = -1;
+    int last_direction = -1;
 };
 
 struct Game_State {
@@ -123,9 +127,17 @@ Clock clock_boost;
 Clock relo;
 Clock clock_ghosts;
 
+bool is_valid_cell(int x, int y) {
+    return (x >= 0 && x < COLS && y >= 0 && y < ROWS && mapa[y][x] != '1');
+}
+
+double calculate_distance(int x1, int y1, int x2, int y2) {
+    return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+}
+
 void stop_move() {
-    pacman.currentUp = pacman.currentDown = pacman.currentLeft = pacman.currentRight = false;
-    pacman.intentionUp = pacman.intentionDown = pacman.intentionLeft = pacman.intentionRight = false;
+    pacman.current_up = pacman.current_down = pacman.current_left = pacman.current_right = false;
+    pacman.intention_up = pacman.intention_down = pacman.intention_left = pacman.intention_right = false;
     if (!pacman.texture.loadFromFile("imagens/pacman.png")) {
         cout << "Erro lendo imagem imagens/pacman.png\n";
     }
@@ -141,6 +153,7 @@ void reposiciona() {
 
     for (int i = 0; i < 4; i++) {
         ghost[i].opposite_direction = -1;
+        ghost[i].last_direction = -1;
     }
 }
 
@@ -222,101 +235,6 @@ bool check_boundaries(int y, int x) {
     return (mapa[pacman.y + y][pacman.x + x] != '1');
 }
 
-int calcula_distancia(int x1, int y1, int x2, int y2) { return abs(x1 - x2) + abs(y1 - y2); }
-
-void move_ghost_persegue(Ghost temp, int target_x, int target_y) {
-    int direction_chose = -1;
-    int min_dist = 1000000000;
-
-    int dx[] = {1, 0, -1, 0};
-    int dy[] = {0, 1, 0, -1};
-
-    for (int dir = 0; dir < 4; dir++) {
-        if (dir == temp.opposite_direction)
-            continue;
-
-        int new_x = temp.x + dx[dir];
-        int new_y = temp.y + dy[dir];
-
-        if (new_x < 0)
-            new_x = COLS - 1;
-        if (new_x >= COLS)
-            new_x = 0;
-        if (new_y < 0)
-            new_y = ROWS - 1;
-        if (new_y >= ROWS)
-            new_y = 0;
-
-        if (mapa[new_y][new_x] != '1') {
-            int distance = calcula_distancia(new_x, new_y, target_x, target_y);
-            if (distance < min_dist) {
-                min_dist = distance;
-                direction_chose = dir;
-            }
-        }
-    }
-
-    if (direction_chose != -1) {
-        temp.opposite_direction = (direction_chose + 2) % 4;
-        temp.x += dx[direction_chose];
-        temp.y += dy[direction_chose];
-
-        if (temp.x < 0)
-            temp.x = COLS - 1;
-        if (temp.x >= COLS)
-            temp.x = 0;
-        if (temp.y < 0)
-            temp.y = ROWS - 1;
-        if (temp.y >= ROWS)
-            temp.y = 0;
-    }
-}
-
-void move_ghost(Ghost& temp) {
-
-    int valid_directions[4];
-    int valid_count = 0;
-
-    if (mapa[temp.y][temp.x + 1] != '1' && temp.opposite_direction != 0) {
-        valid_directions[valid_count++] = 0;
-    }
-
-    if (mapa[temp.y + 1][temp.x] != '1' && temp.opposite_direction != 1) {
-        valid_directions[valid_count++] = 1;
-    }
-
-    if (mapa[temp.y][temp.x - 1] != '1' && temp.opposite_direction != 2) {
-        valid_directions[valid_count++] = 2;
-    }
-
-    if (mapa[temp.y - 1][temp.x] != '1' && temp.opposite_direction != 3) {
-        valid_directions[valid_count++] = 3;
-    }
-
-    int direction_chose = valid_directions[rand() % valid_count];
-
-    temp.opposite_direction = (direction_chose + 2) % 4;
-
-    if (direction_chose == 0) {
-        temp.x++;
-    } else if (direction_chose == 1) {
-        temp.y++;
-    } else if (direction_chose == 2) {
-        temp.x--;
-    } else if (direction_chose == 3) {
-        temp.y--;
-    }
-
-    if (temp.x < 0)
-        temp.x = COLS - 1;
-    if (temp.x >= COLS)
-        temp.x = 0;
-    if (temp.y < 0)
-        temp.y = ROWS - 1;
-    if (temp.y >= ROWS)
-        temp.y = 0;
-}
-
 void verificar_vitoria() {
     if (game_state.points >= TOTAL_POINTS) {
         game_state.win = true;
@@ -333,6 +251,206 @@ bool verifica_morte() {
     }
     return 0;
 }
+
+
+struct Node {
+    int x, y;
+    double f, g, h;
+    int parent_x, parent_y;
+    
+    Node() : x(0), y(0), f(0), g(0), h(0), parent_x(-1), parent_y(-1) {}
+    Node(int _x, int _y) : x(_x), y(_y), f(0), g(0), h(0), parent_x(-1), parent_y(-1) {}
+};
+
+struct Compare {
+    bool operator()(const Node& a, const Node& b) {
+        return a.f > b.f; // Min heap based on f value
+    }
+};
+
+
+void move_ghost(Ghost& ghost_ref) {
+    int valid_directions[4];
+    int valid_count = 0;
+
+    if (mapa[ghost_ref.y][ghost_ref.x + 1] != '1' && ghost_ref.opposite_direction != 0) {
+        valid_directions[valid_count++] = 0;
+    }
+
+    if (mapa[ghost_ref.y + 1][ghost_ref.x] != '1' && ghost_ref.opposite_direction != 1) {
+        valid_directions[valid_count++] = 1;
+    }
+
+    if (mapa[ghost_ref.y][ghost_ref.x - 1] != '1' && ghost_ref.opposite_direction != 2) {
+        valid_directions[valid_count++] = 2;
+    }
+
+    if (mapa[ghost_ref.y - 1][ghost_ref.x] != '1' && ghost_ref.opposite_direction != 3) {
+        valid_directions[valid_count++] = 3;
+    }
+
+    int direction_chosen = valid_directions[rand() % valid_count];
+
+    ghost_ref.opposite_direction = (direction_chosen + 2) % 4;
+    ghost_ref.last_direction = direction_chosen;
+
+    if (direction_chosen == 0) {
+        ghost_ref.x++;
+    } else if (direction_chosen == 1) {
+        ghost_ref.y++;
+    } else if (direction_chosen == 2) {
+        ghost_ref.x--;
+    } else if (direction_chosen == 3) {
+        ghost_ref.y--;
+    }
+
+    if (ghost_ref.x < 0)
+        ghost_ref.x = COLS - 1;
+    if (ghost_ref.x >= COLS)
+        ghost_ref.x = 0;
+    if (ghost_ref.y < 0)
+        ghost_ref.y = ROWS - 1;
+    if (ghost_ref.y >= ROWS)
+        ghost_ref.y = 0;
+}
+
+
+vector<pair<int, int>> findPath(int start_x, int start_y, int target_x, int target_y, Ghost ghost_ref) {
+    vector<pair<int, int>> path;
+    
+    if (!is_valid_cell(target_x, target_y) || (start_x == target_x && start_y == target_y)) {
+        return path;
+    }
+    
+    bool closed_list[ROWS][COLS];
+    memset(closed_list, 0, sizeof(closed_list));
+    
+    Node cell_details[ROWS][COLS];
+    
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            cell_details[i][j] = Node(j, i);
+            cell_details[i][j].f = FLT_MAX;
+            cell_details[i][j].g = FLT_MAX;
+            cell_details[i][j].h = FLT_MAX;
+        }
+    }
+    
+    cell_details[start_y][start_x].f = 0.0;
+    cell_details[start_y][start_x].g = 0.0;
+    cell_details[start_y][start_x].h = 0.0;
+    cell_details[start_y][start_x].parent_x = start_x;
+    cell_details[start_y][start_x].parent_y = start_y;
+    
+    priority_queue<Node, vector<Node>, Compare> open_list;
+    open_list.push(cell_details[start_y][start_x]);
+    
+    bool found_dest = false;
+    
+    int dx[] = {1, 0, -1, 0};
+    int dy[] = {0, 1, 0, -1};
+    
+    while (!open_list.empty() && !found_dest) {
+        Node current = open_list.top();
+        open_list.pop();
+        
+        int x = current.x;
+        int y = current.y;
+        closed_list[y][x] = true;
+
+        int opposite_direciton = ghost_ref.opposite_direction;
+        
+        for (int dir = 0; dir < 4; dir++) {
+            if (x == start_x && y == start_y && dir == opposite_direciton) {
+                continue;
+            }
+            
+            int new_x = x + dx[dir];
+            int new_y = y + dy[dir];
+            
+            if (is_valid_cell(new_x, new_y)) {
+                if (new_x == target_x && new_y == target_y) {
+                    cell_details[new_y][new_x].parent_x = x;
+                    cell_details[new_y][new_x].parent_y = y;
+                    found_dest = true;
+                    
+                    int path_x = target_x, path_y = target_y;
+                    while (!(cell_details[path_y][path_x].parent_x == path_x && 
+                             cell_details[path_y][path_x].parent_y == path_y)) {
+                        path.push_back({path_x, path_y});
+                        int temp_x = cell_details[path_y][path_x].parent_x;
+                        int temp_y = cell_details[path_y][path_x].parent_y;
+                        path_x = temp_x;
+                        path_y = temp_y;
+                    }
+                    path.push_back({path_x, path_y});
+                    reverse(path.begin(), path.end());
+                    break;
+                }
+                else if (!closed_list[new_y][new_x]) {
+                    double g_new = cell_details[y][x].g + 1.0;
+                    double h_new = calculate_distance(new_x, new_y, target_x, target_y);
+                    double f_new = g_new + h_new;
+                    
+                    if (cell_details[new_y][new_x].f == FLT_MAX || 
+                        cell_details[new_y][new_x].f > f_new) {
+                        
+                        cell_details[new_y][new_x].f = f_new;
+                        cell_details[new_y][new_x].g = g_new;
+                        cell_details[new_y][new_x].h = h_new;
+                        cell_details[new_y][new_x].parent_x = x;
+                        cell_details[new_y][new_x].parent_y = y;
+                        
+                        open_list.push(cell_details[new_y][new_x]);
+                    }
+                }
+            }
+        }
+    }
+    
+    return path;
+}
+
+
+
+void move_ghost_astar(Ghost& ghost_ref, int target_x, int target_y) {
+    static vector<pair<int, int>> current_path;
+    static int path_index = 0;
+    static int last_target_x = -1, last_target_y = -1;
+    
+    int last_direction = ghost_ref.last_direction;
+    
+    if (target_x != last_target_x || target_y != last_target_y || path_index >= current_path.size()) {
+        current_path = findPath(ghost_ref.x, ghost_ref.y, target_x, target_y, ghost_ref);
+        path_index = 0;
+        last_target_x = target_x;
+        last_target_y = target_y;
+    }
+    
+    if (!current_path.empty() && path_index < current_path.size()) {
+        if (path_index == 0 && current_path[0].first == ghost_ref.x && current_path[0].second == ghost_ref.y) {
+            path_index++;
+        }
+        
+        if (path_index < current_path.size()) {
+            int delta_x = current_path[path_index].first - ghost_ref.x;
+            int delta_y = current_path[path_index].second - ghost_ref.y;
+            
+            ghost_ref.x = current_path[path_index].first;
+            ghost_ref.y = current_path[path_index].second;
+            
+            if (delta_x == 1 && delta_y == 0) ghost_ref.last_direction = 0; 
+            else if (delta_x == 0 && delta_y == 1) ghost_ref.last_direction = 1; 
+            else if (delta_x == -1 && delta_y == 0) ghost_ref.last_direction = 2; 
+            else if (delta_x == 0 && delta_y == -1) ghost_ref.last_direction = 3; 
+            ghost_ref.opposite_direction = ((ghost_ref.last_direction + 2) % 4);
+            path_index++;
+        }
+    } else {
+        move_ghost(ghost_ref);
+    }
+}
+
 
 int main() {
     reposiciona();
@@ -482,17 +600,17 @@ int main() {
                     else if (event.key.code == Keyboard::R)
                         reinicia();
                     else if (event.key.code == Keyboard::Left || event.key.code == Keyboard::A) {
-                        pacman.intentionLeft = true;
-                        pacman.intentionRight = pacman.intentionUp = pacman.intentionDown = false;
+                        pacman.intention_left = true;
+                        pacman.intention_right = pacman.intention_up = pacman.intention_down = false;
                     } else if (event.key.code == Keyboard::Right || event.key.code == Keyboard::D) {
-                        pacman.intentionRight = true;
-                        pacman.intentionLeft = pacman.intentionUp = pacman.intentionDown = false;
+                        pacman.intention_right = true;
+                        pacman.intention_left = pacman.intention_up = pacman.intention_down = false;
                     } else if (event.key.code == Keyboard::Up || event.key.code == Keyboard::W) {
-                        pacman.intentionUp = true;
-                        pacman.intentionLeft = pacman.intentionRight = pacman.intentionDown = false;
+                        pacman.intention_up = true;
+                        pacman.intention_left = pacman.intention_right = pacman.intention_down = false;
                     } else if (event.key.code == Keyboard::Down || event.key.code == Keyboard::S) {
-                        pacman.intentionDown = true;
-                        pacman.intentionLeft = pacman.intentionRight = pacman.intentionUp = false;
+                        pacman.intention_down = true;
+                        pacman.intention_left = pacman.intention_right = pacman.intention_up = false;
                     } // else if (event.key.code == Keyboard::K)
                     //     morrer();
                 }
@@ -519,35 +637,35 @@ int main() {
 
                     verificar_vitoria();
 
-                    if (pacman.intentionUp && check_boundaries(-1, 0)) {
-                        pacman.intentionUp = false;
-                        pacman.currentUp = true;
-                        pacman.currentDown = pacman.currentLeft = pacman.currentRight = false;
+                    if (pacman.intention_up && check_boundaries(-1, 0)) {
+                        pacman.intention_up = false;
+                        pacman.current_up = true;
+                        pacman.current_down = pacman.current_left = pacman.current_right = false;
                         pacman.texture.loadFromFile("imagens/pacman-up.png");
-                    } else if (pacman.intentionDown && check_boundaries(1, 0)) {
-                        pacman.intentionDown = false;
-                        pacman.currentDown = true;
-                        pacman.currentUp = pacman.currentLeft = pacman.currentRight = false;
+                    } else if (pacman.intention_down && check_boundaries(1, 0)) {
+                        pacman.intention_down = false;
+                        pacman.current_down = true;
+                        pacman.current_up = pacman.current_left = pacman.current_right = false;
                         pacman.texture.loadFromFile("imagens/pacman-down.png");
-                    } else if (pacman.intentionLeft && check_boundaries(0, -1)) {
-                        pacman.intentionLeft = false;
-                        pacman.currentLeft = true;
-                        pacman.currentUp = pacman.currentDown = pacman.currentRight = false;
+                    } else if (pacman.intention_left && check_boundaries(0, -1)) {
+                        pacman.intention_left = false;
+                        pacman.current_left = true;
+                        pacman.current_up = pacman.current_down = pacman.current_right = false;
                         pacman.texture.loadFromFile("imagens/pacman-esq.png");
-                    } else if (pacman.intentionRight && check_boundaries(0, 1)) {
-                        pacman.intentionRight = false;
-                        pacman.currentRight = true;
-                        pacman.currentUp = pacman.currentDown = pacman.currentLeft = false;
+                    } else if (pacman.intention_right && check_boundaries(0, 1)) {
+                        pacman.intention_right = false;
+                        pacman.current_right = true;
+                        pacman.current_up = pacman.current_down = pacman.current_left = false;
                         pacman.texture.loadFromFile("imagens/pacman.png");
                     }
 
-                    if (pacman.currentUp && check_boundaries(-1, 0))
+                    if (pacman.current_up && check_boundaries(-1, 0))
                         pacman.y--;
-                    else if (pacman.currentDown && check_boundaries(1, 0))
+                    else if (pacman.current_down && check_boundaries(1, 0))
                         pacman.y++;
-                    else if (pacman.currentLeft && check_boundaries(0, -1))
+                    else if (pacman.current_left && check_boundaries(0, -1))
                         pacman.x--;
-                    else if (pacman.currentRight && check_boundaries(0, 1))
+                    else if (pacman.current_right && check_boundaries(0, 1))
                         pacman.x++;
 
                     if (verifica_morte()) {
@@ -559,7 +677,7 @@ int main() {
                 if (clock_ghosts.getElapsedTime() > seconds(GHOST_SPEED)) {
                     move_ghost(ghost[0]);
                     move_ghost(ghost[1]);
-                    move_ghost(ghost[2]);
+                    move_ghost_astar(ghost[2], pacman.x, pacman.y);
                     move_ghost(ghost[3]);
                    
                     clock_ghosts.restart();
