@@ -614,6 +614,7 @@ int main() {
             if (!game_state.lose || !game_state.win) {
 
                 float intervalo = game_state.boost ? PACMAN_FAST_SPEED : PACMAN_SPEED;
+                bool morte = 0;
                 if (relo.getElapsedTime() > seconds(intervalo)) {
                     if (game_state.boost && clock_boost.getElapsedTime() > seconds(ENERGY_DURATION)) {
                         game_state.boost = false;
@@ -666,6 +667,7 @@ int main() {
 
                     if (verifica_morte()) {
                         morrer();
+                        morte = 1;
                     }
                     relo.restart();
                 }
@@ -677,10 +679,11 @@ int main() {
                     move_ghost(ghost[3]);
 
                     clock_ghosts.restart();
-                    if (verifica_morte()) {
+                    if (!morte && verifica_morte()) {
                         morrer();
                     }
                 }
+                morte = 0;
             }
         }
 
