@@ -19,9 +19,6 @@
 // Colisão com paredes:   implementado
 // Intenção de movimento: implementado
 
-#define Pair pair<int, int>
-#define pPair pair<double, pair<int, int>>
-
 using namespace sf;
 using namespace std;
 
