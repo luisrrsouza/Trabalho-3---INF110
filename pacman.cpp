@@ -1,4 +1,5 @@
 // g++ pacman_copia.cpp -lsfml-graphics -lsfml-window -lsfml-system -o pacman.out && ./pacman.out
+// https://github.com/luisrrsouza/Trabalho-3---INF110
 // https://docs.google.com/presentation/d/1cCzdtlDNhkRqIwMMGLtdGYEfC60Vs4DZoHIObHdFGsk/edit?usp=sharing
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
@@ -106,6 +107,7 @@ Music death_sound;
 Music game_over;
 Music choice;
 Music win;
+
 Texture texture_fruta;
 Sprite sprite_fruta;
 Texture texture_boost;
@@ -126,11 +128,11 @@ Clock relo;
 Clock clock_ghosts;
 
 // Função para validar se uma célula está dentro dos limites do mapa e não é parede
-bool is_valid_cell(int x, int y) { return (x >= 0 && x < COLS && y >= 0 && y < ROWS && mapa[y][x] != '1'); }
+bool is_valid_map_cell(int x, int y) { return (x >= 0 && x < COLS && y >= 0 && y < ROWS && mapa[y][x] != '1'); }
 
 // Função para calcular distância euclidiana entre dois pontos (usada como heurística no A*)
 double calculate_distance(int x1, int y1, int x2, int y2) {
-    return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    return abs(x1 - x2) + abs (y1 - y2);
 }
 
 // Para todas as direções do movimento do Pac-Man e resetar sprite para padrão
@@ -209,7 +211,7 @@ void posiciona_boost(char mapa[ROWS][COLS + 1]) {
 }
 
 // Verifica limites do mapa e permite teleporte através das bordas
-bool check_boundaries(int y, int x) {
+bool check_pacman_move(int y, int x) {
     if (pacman.y + y < 0) {
         pacman.y = ROWS;
         return 1;
@@ -321,7 +323,7 @@ vector<pair<int, int>> findPath(int start_x, int start_y, int target_x, int targ
     vector<pair<int, int>> path;
 
     // Verifica se o alvo é válido ou se já está na posição
-    if (!is_valid_cell(target_x, target_y) || (start_x == target_x && start_y == target_y)) {
+    if (!is_valid_map_cell(target_x, target_y) || (start_x == target_x && start_y == target_y)) {
         return path;
     }
 
@@ -380,7 +382,7 @@ vector<pair<int, int>> findPath(int start_x, int start_y, int target_x, int targ
             int new_x = x + dx[dir];
             int new_y = y + dy[dir];
 
-            if (is_valid_cell(new_x, new_y)) {
+            if (is_valid_map_cell(new_x, new_y)) {
                 // Verifica se chegou ao destino
                 if (new_x == target_x && new_y == target_y) {
                     cell_details[new_y][new_x].parent_x = x;
@@ -692,22 +694,22 @@ int main() {
                     verificar_vitoria();
 
                     // Sistema de intenção de movimento: verifica se pode mover na direção desejada
-                    if (pacman.intention_up && check_boundaries(-1, 0)) {
+                    if (pacman.intention_up && check_pacman_move(-1, 0)) {
                         pacman.intention_up = false;
                         pacman.current_up = true;
                         pacman.current_down = pacman.current_left = pacman.current_right = false;
                         pacman.texture.loadFromFile("imagens/pacman-up.png");
-                    } else if (pacman.intention_down && check_boundaries(1, 0)) {
+                    } else if (pacman.intention_down && check_pacman_move(1, 0)) {
                         pacman.intention_down = false;
                         pacman.current_down = true;
                         pacman.current_up = pacman.current_left = pacman.current_right = false;
                         pacman.texture.loadFromFile("imagens/pacman-down.png");
-                    } else if (pacman.intention_left && check_boundaries(0, -1)) {
+                    } else if (pacman.intention_left && check_pacman_move(0, -1)) {
                         pacman.intention_left = false;
                         pacman.current_left = true;
                         pacman.current_up = pacman.current_down = pacman.current_right = false;
                         pacman.texture.loadFromFile("imagens/pacman-esq.png");
-                    } else if (pacman.intention_right && check_boundaries(0, 1)) {
+                    } else if (pacman.intention_right && check_pacman_move(0, 1)) {
                         pacman.intention_right = false;
                         pacman.current_right = true;
                         pacman.current_up = pacman.current_down = pacman.current_left = false;
@@ -715,13 +717,13 @@ int main() {
                     }
 
                     // Movimento contínuo: continua movendo na direção atual se possível
-                    if (pacman.current_up && check_boundaries(-1, 0))
+                    if (pacman.current_up && check_pacman_move(-1, 0))
                         pacman.y--;
-                    else if (pacman.current_down && check_boundaries(1, 0))
+                    else if (pacman.current_down && check_pacman_move(1, 0))
                         pacman.y++;
-                    else if (pacman.current_left && check_boundaries(0, -1))
+                    else if (pacman.current_left && check_pacman_move(0, -1))
                         pacman.x--;
-                    else if (pacman.current_right && check_boundaries(0, 1))
+                    else if (pacman.current_right && check_pacman_move(0, 1))
                         pacman.x++;
 
                     if (verifica_morte()) {
