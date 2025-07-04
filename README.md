@@ -281,8 +281,6 @@ Se você receber erros de "undefined reference" relacionados ao áudio:
    Se você não conseguir instalar as bibliotecas de áudio, pode comentar as linhas relacionadas ao som no código e compilar apenas com:
    ```sh
    g++ -std=c++17 pacman.cpp -lsfml-graphics -lsfml-window -lsfml-system -o pacman.out
-   ```sh
-   g++ -std=c++17 pacman.cpp -lsfml-graphics -lsfml-window -lsfml-system -o pacman.out
    ```
 
 ## Como jogar
