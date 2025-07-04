@@ -165,8 +165,7 @@ trabalho3/
     ├── energy-drink.png # Sprite do energético
     ├── start*.png       # Sprites do menu inicial
     ├── tela_demorte.png # Sprite da tela de game over
-    ├── win.png          # Sprite da tela de vitória
-    └── pacmanvida.png   # Sprite para vidas
+    └── win.png          # Sprite da tela de vitória
 ```
 
 ## Controles
