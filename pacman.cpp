@@ -320,7 +320,7 @@ void move_ghost(Ghost &ghost_ref) {
 }
 
 // Implementação do algoritmo A* para encontrar o caminho mais curto
-vector<pair<int, int>> findPath(int start_x, int start_y, int target_x, int target_y, Ghost ghost_ref) {
+vector<pair<int, int>> finda_path(int start_x, int start_y, int target_x, int target_y, Ghost ghost_ref) {
     vector<pair<int, int>> path;
 
     // Verifica se o alvo é válido ou se já está na posição
@@ -447,7 +447,7 @@ void move_ghost_astar(Ghost &ghost_ref, int target_x, int target_y, bool force_r
 
     // Recalcula caminho se: forçado(quando reinicia), alvo mudou(pacman moveu), ou caminho terminou(chegou em pacman)
     if (force_recalc || target_x != last_target_x || target_y != last_target_y || path_index >= current_path.size()) {
-        current_path = findPath(ghost_ref.x, ghost_ref.y, target_x, target_y, ghost_ref);
+        current_path = finda_path(ghost_ref.x, ghost_ref.y, target_x, target_y, ghost_ref);
         path_index = 0;
         last_target_x = target_x;
         last_target_y = target_y;
