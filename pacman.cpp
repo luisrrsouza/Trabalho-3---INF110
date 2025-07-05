@@ -551,13 +551,13 @@ int main() {
     ghost[0].texture.loadFromFile("imagens/ghostbd.png");
     ghost[0].sprite.setTexture(ghost[0].texture);
 
-    ghost[1].texture.loadFromFile("imagens/ghostge.png");
+    ghost[1].texture.loadFromFile("imagens/ghostgd.png");
     ghost[1].sprite.setTexture(ghost[1].texture);
 
     ghost[2].texture.loadFromFile("imagens/ghostrd.png"); // Fantasma A* (vermelho)
     ghost[2].sprite.setTexture(ghost[2].texture);
 
-    ghost[3].texture.loadFromFile("imagens/ghostye.png");
+    ghost[3].texture.loadFromFile("imagens/ghostyd.png");
     ghost[3].sprite.setTexture(ghost[3].texture);
 
     texture_boost.loadFromFile("imagens/energy-drink.png");
