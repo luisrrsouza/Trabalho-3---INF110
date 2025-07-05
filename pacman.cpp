@@ -252,9 +252,12 @@ bool verifica_morte() {
 
 // Estrutura para representar um nó no algoritmo A*
 struct Node {
-    int x = 0, y = 0;
-    double f = 0.0, g = 0.0, h = 0.0;
-    int parent_x = -1, parent_y = -1;
+    int x, y;
+    double f, g, h;
+    int parent_x, parent_y;
+
+    Node() : x(0), y(0), f(0), g(0), h(0), parent_x(-1), parent_y(-1) {}
+    Node(int _x, int _y) : x(_x), y(_y), f(0), g(0), h(0), parent_x(-1), parent_y(-1) {}
 };
 
 // Comparador para priority queue (min-heap baseado no custo f)
@@ -271,13 +274,22 @@ void move_ghost(Ghost &ghost_ref) {
     int valid_count = 0;
 
     // Verifica direções válidas (não bloqueadas e não opostas)
-    for (int i = 0; i < 4; i++) {
-      if (mapa[ghost_ref.y][ghost_ref.x + 1] != '1') { //diferente de uma parede
-        if (ghost_ref.opposite_direction != i) { //possivel posição(cima,baixo...(0,1...), diferente da inversda)
-          valid_directions[valid_count++] = i;
-        }
-      }
+    if (mapa[ghost_ref.y][ghost_ref.x + 1] != '1' && ghost_ref.opposite_direction != 0) {
+        valid_directions[valid_count++] = 0; // Direita
     }
+
+    if (mapa[ghost_ref.y + 1][ghost_ref.x] != '1' && ghost_ref.opposite_direction != 1) {
+        valid_directions[valid_count++] = 1; // Baixo
+    }
+
+    if (mapa[ghost_ref.y][ghost_ref.x - 1] != '1' && ghost_ref.opposite_direction != 2) {
+        valid_directions[valid_count++] = 2; // Esquerda
+    }
+
+    if (mapa[ghost_ref.y - 1][ghost_ref.x] != '1' && ghost_ref.opposite_direction != 3) {
+        valid_directions[valid_count++] = 3; // Cima
+    }
+
     // Escolhe direção aleatória entre as válidas
     int direction_chosen = valid_directions[rand() % valid_count];
 
@@ -308,10 +320,8 @@ void move_ghost(Ghost &ghost_ref) {
 }
 
 // Implementação do algoritmo A* para encontrar o caminho mais curto
-vector<pair<int, int>> find_path(int target_x, int target_y, Ghost ghost_ref) {
+vector<pair<int, int>> findPath(int start_x, int start_y, int target_x, int target_y, Ghost ghost_ref) {
     vector<pair<int, int>> path;
-    int start_x = ghost_ref.x;
-    int start_y = ghost_ref.y;
 
     // Verifica se o alvo é válido ou se já está na posição
     if (!is_valid_map_cell(target_x, target_y) || (start_x == target_x && start_y == target_y)) {
@@ -329,8 +339,7 @@ vector<pair<int, int>> find_path(int target_x, int target_y, Ghost ghost_ref) {
     // exceto a posição de ghost que é 0 na prática 
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
-            cell_details[i][j].x = i;
-            cell_details[i][j].y = j;
+            cell_details[i][j] = Node(j, i);
             cell_details[i][j].f = FLT_MAX;
             cell_details[i][j].g = FLT_MAX;
             cell_details[i][j].h = FLT_MAX;
@@ -348,7 +357,6 @@ vector<pair<int, int>> find_path(int target_x, int target_y, Ghost ghost_ref) {
     priority_queue<Node, vector<Node>, Compare> open_list;
     // adiciona a célula da posição iniciaçl
     open_list.push(cell_details[start_y][start_x]);
-
 
     bool found_dest = false;
 
@@ -374,6 +382,7 @@ vector<pair<int, int>> find_path(int target_x, int target_y, Ghost ghost_ref) {
             if (x == start_x && y == start_y && dir == opposite_direciton) {
                 continue;
             }
+
             // nex_x e new_y para testar se aquela posição é valida e dentro loop testar se ela é "prioritária"
             int new_x = x + dx[dir];
             int new_y = y + dy[dir];
@@ -402,7 +411,7 @@ vector<pair<int, int>> find_path(int target_x, int target_y, Ghost ghost_ref) {
                     // Calcula custos g, h e f
                     // Como não tem peso no gráfico cada andada é dada como 1
                     double g_new = cell_details[y][x].g + 1.0;
-                    // dado pela distância Manhattan
+                    // dada pela distância manhattan
                     double h_new = calculate_distance(new_x, new_y, target_x, target_y);
                     // "Prioridade" final do caminho
                     double f_new = g_new + h_new;
@@ -417,7 +426,7 @@ vector<pair<int, int>> find_path(int target_x, int target_y, Ghost ghost_ref) {
                         cell_details[new_y][new_x].parent_y = y;
 
                         open_list.push(cell_details[new_y][new_x]);
-                        //adiciona à lista de celulas a serem exploradas
+                        //adiciona à lista de celulas a serem exploradas                    
                     }
                 }
             }
@@ -438,7 +447,7 @@ void move_ghost_astar(Ghost &ghost_ref, int target_x, int target_y, bool force_r
 
     // Recalcula caminho se: forçado(quando reinicia), alvo mudou(pacman moveu), ou caminho terminou(chegou em pacman)
     if (force_recalc || target_x != last_target_x || target_y != last_target_y || path_index >= current_path.size()) {
-        current_path = find_path(target_x, target_y, ghost_ref);
+        current_path = findPath(ghost_ref.x, ghost_ref.y, target_x, target_y, ghost_ref);
         path_index = 0;
         last_target_x = target_x;
         last_target_y = target_y;
